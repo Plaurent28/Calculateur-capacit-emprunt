@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {
+            background-color: #000;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 20px;
+        }
+        .calculator {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+        .input-group {
+            margin-bottom: 30px;
+        }
+        .input-group label {
+            display: block;
+            color: #888;
+            margin-bottom: 8px;
+        }
+        .input-group input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid #333;
+            color: #fff;
+            font-size: 24px;
+            width: 200px;
+            padding: 5px 0;
+        }
+        .input-group .unit {
+            color: #666;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+        .results {
+            text-align: right;
+        }
+        .result {
+            margin-bottom: 20px;
+        }
+        .main-amount {
+            font-size: 36px;
+            margin-bottom: 30px;
+        }
+        .details {
+            background: #111;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #222;
+        }
+        .detail-row:last-child {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #888;
+        }
+        .detail-value {
+            font-size: 18px;
+        }
+        .summary {
+            grid-column: 1 / -1;
+            text-align: center;
+            color: #888;
+            padding: 20px;
+        }
+        .monthly-payment {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .monthly-payment .amount {
+            font-size: 24px;
+            color: #4169e1;
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="calculator">
+        <div class="inputs">
+            <div class="input-group">
+                <label>Revenus mensuels</label>
+                <input type="number" id="income" value="3000">
+                <div class="unit">EUR</div>
+            </div>
+            
+            <div class="input-group">
+                <label>Charges mensuelles</label>
+                <input type="number" id="expenses" value="500">
+                <div class="unit">EUR</div>
+            </div>
+
+            <div class="input-group">
+                <label>Durée du prêt</label>
+                <input type="number" id="duration" value="25">
+                <div class="unit">ANNÉES</div>
+            </div>
+
+            <div class="input-group">
+                <label>Taux d'intérêt</label>
+                <input type="number" id="rate" value="3.5" step="0.1">
+                <div class="unit">%</div>
+            </div>
+        </div>
+
+        <div class="results">
+            <div class="main-amount">
+                <span id="loanAmount">350000</span> €
+            </div>
+            <div class="details">
+                <div class="detail-row">
+                    <span class="detail-label">Capital emprunté</span>
+                    <span class="detail-value"><span id="capitalAmount">350000</span> €</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Coût total des intérêts</span>
+                    <span class="detail-value"><span id="interestAmount">175000</span> €</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Coût total du crédit</span>
+                    <span class="detail-value"><span id="totalAmount">525000</span> €</span>
+                </div>
+            </div>
+            <div class="monthly-payment">
+                <div class="detail-label">Mensualité</div>
+                <div class="amount"><span id="monthlyPayment">1750</span> €</div>
+            </div>
+        </div>
+
+        <div class="summary">
+            Avec des revenus de <span id="summaryIncome">3000</span> € et des charges de <span id="summaryExpenses">500</span> € par mois,
+            vous pouvez emprunter jusqu'à <span id="summaryAmount">350000</span> € sur <span id="summaryDuration">25</span> ans à <span id="summaryRate">3.5</span>%.
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('input');
+
+        function calculateLoanDetails(income, expenses, duration, rate) {
+            const monthlyPaymentCapacity = income * 0.33 - expenses;
+            const monthlyRate = rate / 100 / 12;
+            const numberOfPayments = duration * 12;
+            
+            // Calculate maximum loan amount based on monthly payment capacity
+            const loanAmount = monthlyPaymentCapacity * (1 - Math.pow(1 + monthlyRate, -numberOfPayments)) / monthlyRate;
+            
+            // Calculate total cost
+            const totalPayment = monthlyPaymentCapacity * numberOfPayments;
+            const interestAmount = totalPayment - loanAmount;
+            
+            return {
+                loanAmount: Math.round(loanAmount),
+                monthlyPayment: Math.round(monthlyPaymentCapacity),
+                interestAmount: Math.round(interestAmount),
+                totalAmount: Math.round(totalPayment)
+            };
+        }
+
+        function updateCalculator() {
+            const income = parseFloat(document.getElementById('income').value);
+            const expenses = parseFloat(document.getElementById('expenses').value);
+            const duration = parseFloat(document.getElementById('duration').value);
+            const rate = parseFloat(document.getElementById('rate').value);
+
+            const results = calculateLoanDetails(income, expenses, duration, rate);
+
+            // Update all displays
+            document.getElementById('loanAmount').textContent = results.loanAmount.toLocaleString();
+            document.getElementById('capitalAmount').textContent = results.loanAmount.toLocaleString();
+            document.getElementById('interestAmount').textContent = results.interestAmount.toLocaleString();
+            document.getElementById('totalAmount').textContent = results.totalAmount.toLocaleString();
+            document.getElementById('monthlyPayment').textContent = results.monthlyPayment.toLocaleString();
+            
+            // Update summary
+            document.getElementById('summaryIncome').textContent = income.toLocaleString();
+            document.getElementById('summaryExpenses').textContent = expenses.toLocaleString();
+            document.getElementById('summaryAmount').textContent = results.loanAmount.toLocaleString();
+            document.getElementById('summaryDuration').textContent = duration;
+            document.getElementById('summaryRate').textContent = rate;
+        }
+
+        inputs.forEach(input => {
+            input.addEventListener('input', updateCalculator);
+        });
+
+        updateCalculator();
+    </script>
+</body>
+</html>
